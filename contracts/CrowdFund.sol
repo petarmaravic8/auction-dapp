@@ -1,5 +1,7 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
+import "hardhat/console.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract CrowdFund {
     address public owner;
@@ -147,6 +149,7 @@ contract CrowdFund {
 
     function performRefund(uint id) internal {
         for(uint i = 0; i < backersOf[id].length; i++) {
+
             address _owner = backersOf[id][i].owner;
             uint _contribution = backersOf[id][i].contribution;
             
@@ -158,25 +161,74 @@ contract CrowdFund {
             stats.totalDonations -= _contribution;
         }
     }
+    function preformRefundTo(uint id, address initiator) public payable returns (bool) {
+        for(uint i = 0; i < backersOf[id].length; i++) {
+
+            if(backersOf[id][i].owner == initiator) {
+            
+                address _owner = backersOf[id][i].owner;
+                uint _contribution = backersOf[id][i].contribution;
+
+                backersOf[id][i].refunded = true;
+                backersOf[id][i].timestamp = block.timestamp;
+
+                projects[id].backers -=1;
+                projects[id].raised -= _contribution;
+
+                payTo(_owner, _contribution);
+
+                stats.totalBacking -= 1;
+                stats.totalDonations -= _contribution;
+
+                return true;
+            }
+        }
+        return false;
+
+    }
 
     function backProject(uint id) public payable returns (bool) {
         require(msg.value > 0 ether, "Ether must be greater than zero");
         require(projectExist[id], "Project not found");
         require(projects[id].status == statusEnum.OPEN, "Project no longer opened");
 
-        stats.totalBacking += 1;
+        bool isBacker = false;
+        uint index = 0;
+        for(uint i = 0; i < backersOf[id].length; i++) {
+
+            if(backersOf[id][i].owner == msg.sender) {
+                isBacker = true;
+                index = i;
+            }
+        }
+        
+        if(isBacker) {
+
+            if(backersOf[id][index].refunded) {
+                stats.totalBacking += 1;
+                projects[id].backers += 1;
+            }
+            backersOf[id][index].refunded ? backersOf[id][index].contribution = msg.value : backersOf[id][index].contribution += msg.value;
+            backersOf[id][index].timestamp = block.timestamp;
+            backersOf[id][index].refunded = false; 
+        }
+        else {
+
+            stats.totalBacking += 1; 
+            projects[id].backers += 1;
+
+            backersOf[id].push(
+                backerStruct(
+                    msg.sender,
+                    msg.value,
+                    block.timestamp,
+                    false
+                )
+            );
+
+        }
         stats.totalDonations += msg.value;
         projects[id].raised += msg.value;
-        projects[id].backers += 1;
-
-        backersOf[id].push(
-            backerStruct(
-                msg.sender,
-                msg.value,
-                block.timestamp,
-                false
-            )
-        );
 
         emit Action (
             id,
@@ -195,6 +247,48 @@ contract CrowdFund {
         if(block.timestamp >= projects[id].expiresAt) {
             projects[id].status = statusEnum.REVERTED;
             performRefund(id);
+            return true;
+        }
+
+        return true;
+    }
+
+    function transferDonatorFunds(uint fromProjectId, uint toProjectId) external payable returns (bool) {
+        require(projectExist[fromProjectId], "Project not found");
+        require(projectExist[toProjectId], "Project not found");
+        require(projects[fromProjectId].raised > 0, "Nothing raised");
+
+        uint contribution = 0;
+        uint index = 0;
+        for(uint i = 0 ; i< backersOf[fromProjectId].length ; i++) {
+
+            if(backersOf[fromProjectId][i].owner == msg.sender) {
+                console.log("usao je u true granu");
+                contribution = backersOf[fromProjectId][i].contribution;
+                index = i;
+            }
+        }
+
+        projects[fromProjectId].raised -= contribution;
+        projects[fromProjectId].backers -= 1;
+        backersOf[fromProjectId][index].refunded = true;
+
+        projects[toProjectId].raised += contribution;
+        projects[toProjectId].backers += 1;
+
+        backersOf[toProjectId].push(
+            backerStruct(
+                msg.sender,
+                contribution,
+                block.timestamp,
+                false
+            )
+        );
+
+        if(projects[toProjectId].raised >= projects[toProjectId].cost) {
+            projects[toProjectId].status = statusEnum.APPROVED;
+            balance += projects[toProjectId].raised;
+            performPayout(toProjectId);
             return true;
         }
 
@@ -261,8 +355,38 @@ contract CrowdFund {
     function getBackers(uint id) public view returns (backerStruct[] memory) {
         return backersOf[id];
     }
+    
+    function getUnbackedProjects(address backer) public view returns (projectStruct[] memory) {
+    projectStruct[] memory unbackedProjects = new projectStruct[](projectCount);
+    uint unbackedCount = 0;
 
-    function payTo(address to, uint256 amount) internal {
+    for (uint i = 0; i < projects.length; i++) {
+        bool found = false;
+        for (uint j = 0; j < backersOf[projects[i].id].length; j++) {
+            if (backersOf[projects[i].id][j].owner == backer) {
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            unbackedProjects[unbackedCount] = projects[i];
+            unbackedCount++;
+        }
+    }
+
+    projectStruct[] memory result = new projectStruct[](unbackedCount);
+    for (uint i = 0; i < unbackedCount; i++) {
+        result[i] = unbackedProjects[i];
+    }
+
+    return result;
+}
+
+    function payTo(address to, uint amount) internal {
+        console.log("UPAO U PAY TO");
+        console.log(to);
+        console.log(Strings.toString(amount));
         (bool success, ) = payable(to).call{value: amount}("");
         require(success);
     }

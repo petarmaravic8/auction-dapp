@@ -5,6 +5,7 @@ import DeleteProject from "../components/DeleteProject";
 import ProjectBackers from "../components/ProjectBackers";
 import ProjectDetails from "../components/ProjectDetails";
 import UpdateProject from "../components/UpdateProject";
+import WithdrawProject from "../components/WithdrawProject";
 import { getBackers, loadProject } from "../services/blockchain";
 import { useGlobalState } from "../store";
 
@@ -26,6 +27,7 @@ const Project = () => {
       <DeleteProject project={project} />
       <BackProject project={project} />
       <ProjectBackers backers={backers} />
+      <WithdrawProject project={project} />
     </>
   ) : null;
 };

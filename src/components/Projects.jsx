@@ -1,19 +1,19 @@
-import Identicons from 'react-identicons'
-import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import { truncate, daysRemaining } from '../store'
-import { FaEthereum } from 'react-icons/fa'
+import Identicons from "react-identicons";
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { truncate, daysRemaining } from "../store";
+import { FaEthereum } from "react-icons/fa";
 
 const Projects = ({ projects }) => {
-  const [end, setEnd] = useState(4)
-  const [count] = useState(4)
-  const [collection, setCollection] = useState([])
+  const [end, setEnd] = useState(4);
+  const [count] = useState(4);
+  const [collection, setCollection] = useState([]);
 
-  const getCollection = () => projects.slice(0, end)
+  const getCollection = () => projects.slice(0, end);
 
   useEffect(() => {
-    setCollection(getCollection())
-  }, [projects, end])
+    setCollection(getCollection());
+  }, [projects, end]);
 
   return (
     <div className="flex flex-col px-6 mb-7">
@@ -37,15 +37,15 @@ const Projects = ({ projects }) => {
         </div>
       ) : null}
     </div>
-  )
-}
+  );
+};
 
 const ProjectCard = ({ project }) => {
-  const expired = new Date().getTime() > Number(project?.expiresAt + '000')
-
+  const expired = new Date().getTime() > Number(project?.expiresAt + "000");
+  console.log(project);
   return (
     <div id="projects" className="rounded-lg shadow-lg bg-white w-64 m-4">
-      <Link to={'/projects/' + project.id}>
+      <Link to={"/projects/" + project.id}>
         <img
           src={project.imageURL}
           alt={project.title}
@@ -68,7 +68,7 @@ const ProjectCard = ({ project }) => {
             </div>
 
             <small className="text-gray-500">
-              {expired ? 'Expired' : daysRemaining(project.expiresAt) + ' left'}
+              {expired ? "Expired" : daysRemaining(project.expiresAt) + " left"}
             </small>
           </div>
 
@@ -97,7 +97,7 @@ const ProjectCard = ({ project }) => {
             mt-4 mb-2 text-gray-500 font-bold"
           >
             <small>
-              {project.backers} Backer{project.backers == 1 ? '' : 's'}
+              {project.backers} Backer{project.backers == 1 ? "" : "s"}
             </small>
             <div>
               {expired ? (
@@ -118,7 +118,7 @@ const ProjectCard = ({ project }) => {
         </div>
       </Link>
     </div>
-  )
-}
+  );
+};
 
-export default Projects
+export default Projects;

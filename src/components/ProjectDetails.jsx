@@ -11,7 +11,6 @@ import { payoutProject } from "../services/blockchain";
 const ProjectDetails = ({ project, backers }) => {
   const [connectedAccount] = useGlobalState("connectedAccount");
   const expired = new Date().getTime() > Number(project?.expiresAt + "000");
-
   console.log(backers);
   return (
     <div className="pt-24 mb-5 px-6 flex justify-center">
@@ -105,7 +104,6 @@ const ProjectDetails = ({ project, backers }) => {
                     Back Project
                   </button>
                 ) : null}
-
                 {connectedAccount == project?.owner ? (
                   project?.status != 3 ? (
                     project?.status == 1 ? (
@@ -156,53 +154,23 @@ const ProjectDetails = ({ project, backers }) => {
                   ) : null
                 ) : null}
 
-                {backers?.some((e) => e.owner == connectedAccount) ? (
+                {backers?.some(
+                  (e) => e.owner == connectedAccount && !e.refunded
+                ) ? (
                   project?.status != 3 ? (
-                    project?.status == 1 ? (
+                    project?.status == 0 ? (
                       <button
                         type="button"
                         className="inline-block px-6 py-2.5 bg-orange-600
                         text-white font-medium text-xs leading-tight uppercase
                         rounded-full shadow-md hover:bg-orange-700"
-                        onClick={() => payoutProject(project?.id)}
+                        onClick={() =>
+                          setGlobalState("withdrawModal", "scale-100")
+                        }
                       >
-                        POVUCI NOVAC
+                        WITHDRAW
                       </button>
-                    ) : project?.status != 4 ? (
-                      <>
-                        <button
-                          type="button"
-                          className="inline-block px-6 py-2.5 bg-gray-600
-                          text-white font-medium text-xs leading-tight uppercase
-                          rounded-full shadow-md hover:bg-gray-700"
-                          onClick={() =>
-                            setGlobalState("updateModal", "scale-100")
-                          }
-                        >
-                          POVUCI NOVAC
-                        </button>
-                        <button
-                          type="button"
-                          className="inline-block px-6 py-2.5 bg-red-600
-                          text-white font-medium text-xs leading-tight uppercase
-                          rounded-full shadow-md hover:bg-red-700"
-                          onClick={() =>
-                            setGlobalState("deleteModal", "scale-100")
-                          }
-                        >
-                          POVUCI NOVAC
-                        </button>
-                      </>
-                    ) : (
-                      <button
-                        type="button"
-                        className="inline-block px-6 py-2.5 bg-gray-600
-                        text-white font-medium text-xs leading-tight uppercase
-                        rounded-full shadow-md hover:bg-gray-700"
-                      >
-                        POVUCI NOVAC
-                      </button>
-                    )
+                    ) : null
                   ) : null
                 ) : null}
               </div>

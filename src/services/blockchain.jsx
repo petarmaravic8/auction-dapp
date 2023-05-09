@@ -140,7 +140,20 @@ const loadProject = async (id) => {
     const contract = await getEtheriumContract();
     const project = await contract.getProject(id);
 
+    console.log(structuredProjects([project])[0]);
     setGlobalState("project", structuredProjects([project])[0]);
+  } catch (error) {
+    alert(JSON.stringify(error.message));
+    reportError(error);
+  }
+};
+const getUnbackedProjects = async (backer) => {
+  try {
+    if (!ethereum) return alert("Please install Metamask");
+    const contract = await getEtheriumContract();
+    const unbackedProjects = await contract.getUnbackedProjects(backer);
+    setGlobalState("unbackedProjects", structuredProjects(unbackedProjects));
+    console.log(structuredProjects(unbackedProjects));
   } catch (error) {
     alert(JSON.stringify(error.message));
     reportError(error);
@@ -165,13 +178,37 @@ const backProject = async (id, amount) => {
     reportError(error);
   }
 };
+const transferDonatorFunds = async (fromId, toId) => {
+  try {
+    if (!ethereum) return alert("Please install Metamask");
+    //const connectedAccount = getGlobalState("connectedAccount");
+    const contract = await getEtheriumContract();
+    tx = await contract.transferDonatorFunds(fromId, toId);
+    await tx.wait();
+  } catch (error) {
+    reportError(error);
+  }
+};
+
+const preformRefundTo = async (id, initiator) => {
+  try {
+    if (!ethereum) return alert("Please install Metamask");
+    const connectedAccount = getGlobalState("connectedAccount");
+    const contract = await getEtheriumContract();
+
+    tx = await contract.preformRefundTo(id, initiator);
+    await tx.wait();
+  } catch (error) {
+    reportError(error);
+  }
+};
 
 const getBackers = async (id) => {
   try {
     if (!ethereum) return alert("Please install Metamask");
     const contract = await getEtheriumContract();
     let backers = await contract.getBackers(id);
-
+    console.log(backers);
     setGlobalState("backers", structuredBackers(backers));
   } catch (error) {
     reportError(error);
@@ -187,7 +224,6 @@ const payoutProject = async (id) => {
     tx = await contract.payOutProject(id, {
       from: connectedAccount,
     });
-
     await tx.wait();
     await getBackers(id);
   } catch (error) {
@@ -254,4 +290,7 @@ export {
   backProject,
   getBackers,
   payoutProject,
+  preformRefundTo,
+  getUnbackedProjects,
+  transferDonatorFunds,
 };
