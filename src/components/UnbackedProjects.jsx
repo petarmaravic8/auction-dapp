@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { truncate, daysRemaining } from "../store";
 import { FaEthereum } from "react-icons/fa";
 import { transferDonatorFunds } from "../services/blockchain";
+import { toast } from "react-toastify";
+import { useGlobalState, setGlobalState } from "../store";
 
 const UnbackedProjects = ({ unbackedProjects, fromProject }) => {
   const [end, setEnd] = useState(4);
@@ -48,9 +50,13 @@ const ProjectCard = ({ project, fromProject }) => {
       <img
         src={project.imageURL}
         alt={project.title}
-        onClick={async () =>
-          await transferDonatorFunds(fromProject.id, project.id)
-        }
+        onClick={async () => {
+          await transferDonatorFunds(fromProject.id, project.id);
+          toast.success(
+            "Funds successfully transfered, will reflect in 30sec."
+          );
+          setGlobalState("withdrawModal", "scale-0");
+        }}
         className="rounded-xl h-64 w-full object-cover"
       />
 

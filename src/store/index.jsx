@@ -28,12 +28,31 @@ const truncate = (text, startChars, endChars, maxLength) => {
 };
 
 const daysRemaining = (days) => {
-  const todaysdate = moment();
+  let todaysdate = moment().format("YYYY-MM-DD HH:mm");
+  todaysdate = moment(todaysdate);
   days = Number((days + "000").slice(0));
-  days = moment(days).format("YYYY-MM-DD");
+  days = moment(days).format("YYYY-MM-DD HH:mm");
   days = moment(days);
-  days = days.diff(todaysdate, "days");
-  return days == 1 ? "1 day" : days + " days";
+
+  const differenceInMinutes = days.diff(todaysdate, "minutes");
+  const differenceInHours = Math.floor(differenceInMinutes / 60);
+  const differenceInDays = Math.floor(differenceInHours / 24);
+
+  if (differenceInDays === 0) {
+    if (differenceInHours === 0) {
+      return differenceInMinutes === 1
+        ? `${differenceInMinutes} minute`
+        : `${differenceInMinutes} minutes`;
+    } else {
+      return differenceInHours === 1
+        ? `${differenceInHours} hour`
+        : `${differenceInHours} hours`;
+    }
+  } else {
+    return differenceInDays === 1
+      ? `${differenceInDays} day`
+      : `${differenceInDays} days`;
+  }
 };
 
 export {

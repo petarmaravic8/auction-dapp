@@ -20,16 +20,17 @@ async function main() {
   await crowdFund.deployed();
 
   const address = JSON.stringify({ address: crowdFund.address }, null, 4);
+  console.log(address);
   fs.writeFile(
     "./src/artifacts/contractAddress.json",
     address,
     "utf8",
     (err) => {
       if (err) {
-        console.error(err);
+        //console.error(err);
         return;
       }
-      console.log("Deployed contract address", crowdFund.address);
+      //console.log("Deployed contract address", crowdFund.address);
     }
   );
   //await greeter.deployed();
@@ -40,6 +41,6 @@ async function main() {
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
 main().catch((error) => {
-  console.error(error);
+  //console.error(error);
   process.exitCode = 1;
 });

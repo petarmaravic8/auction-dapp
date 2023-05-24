@@ -74,7 +74,7 @@ const createProject = async ({
       title,
       description,
       imageURL,
-      cost,
+      cost.toString(),
       expiresAt
     );
     await tx.wait();
@@ -89,19 +89,22 @@ const updateProject = async ({
   title,
   description,
   imageURL,
+  cost,
   expiresAt,
 }) => {
   try {
     if (!ethereum) return alert("Please install Metamask");
-
+    cost = ethers.utils.parseEther(cost);
     const contract = await getEtheriumContract();
     tx = await contract.updateProject(
       id,
       title,
       description,
       imageURL,
+      cost,
       expiresAt
     );
+    console.log("posle tx-a");
     await tx.wait();
     await loadProject(id);
   } catch (error) {
@@ -261,6 +264,7 @@ const structuredProjects = (projects) =>
 
 const toDate = (timestamp) => {
   const date = new Date(timestamp);
+  console.log(date, "print date");
   const dd = date.getDate() > 9 ? date.getDate() : `0${date.getDate()}`;
   const mm =
     date.getMonth() + 1 > 9 ? date.getMonth() + 1 : `0${date.getMonth() + 1}`;

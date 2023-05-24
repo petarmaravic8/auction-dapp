@@ -1,41 +1,52 @@
-import { useState } from 'react'
-import { FaTimes } from 'react-icons/fa'
-import { toast } from 'react-toastify'
-import { updateProject } from '../services/blockchain'
-import { useGlobalState, setGlobalState } from '../store'
+import { useState } from "react";
+import { FaTimes } from "react-icons/fa";
+import { toast } from "react-toastify";
+import { updateProject } from "../services/blockchain";
+import { useGlobalState, setGlobalState } from "../store";
+import moment from "moment";
 
 const UpdateProject = ({ project }) => {
-  const [updateModal] = useGlobalState('updateModal')
-  const [title, setTitle] = useState(project?.title)
-  const [description, setDescription] = useState(project?.description)
-  const [date, setDate] = useState(project?.date)
-  const [imageURL, setImageURL] = useState(project?.imageURL)
+  const [updateModal] = useGlobalState("updateModal");
+  const [title, setTitle] = useState(project?.title);
+  const [description, setDescription] = useState(project?.description);
+  const [date, setDate] = useState(project?.date);
+  const [imageURL, setImageURL] = useState(project?.imageURL);
+  const [cost, setCost] = useState(project?.cost);
+  const [expiresAt, setExpiresAt] = useState(project?.expiresAt);
 
   const toTimestamp = (dateStr) => {
-    const dateObj = Date.parse(dateStr)
-    return dateObj / 1000
-  }
+    const dateObj = Date.parse(dateStr);
+    return dateObj / 1000;
+  };
+
+  const fromTimestamp = (dateStr) => {
+    return new Date(dateStr * 1000);
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    if (!title || !description || !date || !imageURL) return
+    console.log(expiresAt, "ejdan");
+    console.log(date, "dva");
+    e.preventDefault();
+    if (!title || !description || !date || !imageURL || !cost || !expiresAt)
+      return;
 
     const params = {
       id: project?.id,
       title,
       description,
-      expiresAt: toTimestamp(date),
       imageURL,
-    }
-
-    await updateProject(params)
-    toast.success('Project updated successffully, will reflect in 30sec.')
-    onClose()
-  }
+      cost,
+      expiresAt: expiresAt,
+    };
+    console.log("pre contract poziva");
+    await updateProject(params);
+    toast.success("Project updated successffully, will reflect in 30sec.");
+    onClose();
+  };
 
   const onClose = () => {
-    setGlobalState('updateModal', 'scale-0')
-  }
+    setGlobalState("updateModal", "scale-0");
+  };
 
   return (
     <div
@@ -64,7 +75,7 @@ const UpdateProject = ({ project }) => {
               <img
                 src={
                   imageURL ||
-                  'https://media.wired.com/photos/5926e64caf95806129f50fde/master/pass/AnkiHP.jpg'
+                  "https://media.wired.com/photos/5926e64caf95806129f50fde/master/pass/AnkiHP.jpg"
                 }
                 alt="project title"
                 className="h-full w-full object-cover cursor-pointer"
@@ -88,6 +99,24 @@ const UpdateProject = ({ project }) => {
               required
             />
           </div>
+          <div
+            className="flex justify-between items-center
+          bg-gray-300 rounded-xl mt-5"
+          >
+            <input
+              className="block w-full bg-transparent
+            border-0 text-sm text-slate-500 focus:outline-none
+            focus:ring-0"
+              type="number"
+              step={0.01}
+              min={0.01}
+              name="amount"
+              placeholder="Amount (ETH)"
+              onChange={(e) => setCost(e.target.value)}
+              value={cost}
+              required
+            />
+          </div>
 
           <div
             className="flex justify-between items-center
@@ -97,11 +126,15 @@ const UpdateProject = ({ project }) => {
               className="block w-full bg-transparent
             border-0 text-sm text-slate-500 focus:outline-none
             focus:ring-0"
-              type="date"
-              name="date"
+              type="datetime-local"
+              name="datetime"
               placeholder="Expires"
-              onChange={(e) => setDate(e.target.value)}
-              value={date}
+              min={moment().format("YYYY-MM-DD HH:mm")}
+              onChange={(e) => setExpiresAt(toTimestamp(e.target.value))}
+              value={moment(fromTimestamp(expiresAt)).format(
+                "YYYY-MM-DD HH:mm"
+              )}
+              //value={expiresAt}
               required
             />
           </div>
@@ -151,7 +184,7 @@ const UpdateProject = ({ project }) => {
         </form>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default UpdateProject
+export default UpdateProject;

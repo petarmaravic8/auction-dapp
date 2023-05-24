@@ -1,7 +1,9 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity >=0.7.3;
+pragma experimental ABIEncoderV2;
 import "hardhat/console.sol";
-import "@openzeppelin/contracts/utils/Strings.sol";
+//import "@openzeppelin/contracts/utils/Strings.sol";
+
 
 contract CrowdFund {
     address public owner;
@@ -108,7 +110,9 @@ contract CrowdFund {
         string memory title,
         string memory description,
         string memory imageURL,
+        uint cost,
         uint expiresAt
+
     ) public returns (bool) {
         require(msg.sender == projects[id].owner, "Unauthorized Entity");
         require(bytes(title).length > 0, "Title cannot be empty");
@@ -119,6 +123,16 @@ contract CrowdFund {
         projects[id].description = description;
         projects[id].imageURL = imageURL;
         projects[id].expiresAt = expiresAt;
+
+        if(cost > projects[id].cost && projects[id].status == statusEnum.APPROVED) {
+            projects[id].status = statusEnum.OPEN;
+            
+        }
+        if(cost <= projects[id].raised && projects[id].status == statusEnum.OPEN) {
+            projects[id].status = statusEnum.APPROVED;
+        }
+
+        projects[id].cost = cost;
 
         emit Action (
             id,
@@ -240,7 +254,7 @@ contract CrowdFund {
         if(projects[id].raised >= projects[id].cost) {
             projects[id].status = statusEnum.APPROVED;
             balance += projects[id].raised;
-            performPayout(id);
+            //performPayout(id);
             return true;
         }
 
@@ -263,7 +277,6 @@ contract CrowdFund {
         for(uint i = 0 ; i< backersOf[fromProjectId].length ; i++) {
 
             if(backersOf[fromProjectId][i].owner == msg.sender) {
-                console.log("usao je u true granu");
                 contribution = backersOf[fromProjectId][i].contribution;
                 index = i;
             }
@@ -293,6 +306,12 @@ contract CrowdFund {
         }
 
         return true;
+    }
+    function claimFunds(uint id) public payable returns(bool) {
+        require(projects[id].status == statusEnum.APPROVED, "Project not APPROVED");
+
+        performPayout(id);
+
     }
 
     function performPayout(uint id) internal {
@@ -336,6 +355,16 @@ contract CrowdFund {
 
         performPayout(id);
         return true;
+    }
+
+    function checkProjectStatusType() public {
+        for(uint i = 0 ; i< projects.length ; i++) {
+            if(projects[i].status == statusEnum.OPEN && block.timestamp >= projects[i].expiresAt) {
+
+                projects[i].status = statusEnum.REVERTED;
+                performRefund(i);
+            }
+        }
     }
 
     function changeTax(uint _taxPct) public ownerOnly {
@@ -384,9 +413,6 @@ contract CrowdFund {
 }
 
     function payTo(address to, uint amount) internal {
-        console.log("UPAO U PAY TO");
-        console.log(to);
-        console.log(Strings.toString(amount));
         (bool success, ) = payable(to).call{value: amount}("");
         require(success);
     }

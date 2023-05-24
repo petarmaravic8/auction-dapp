@@ -11,7 +11,7 @@ import { payoutProject } from "../services/blockchain";
 const ProjectDetails = ({ project, backers }) => {
   const [connectedAccount] = useGlobalState("connectedAccount");
   const expired = new Date().getTime() > Number(project?.expiresAt + "000");
-  console.log(backers);
+
   return (
     <div className="pt-24 mb-5 px-6 flex justify-center">
       <div className="flex justify-center flex-col md:w-2/3">
@@ -107,15 +107,28 @@ const ProjectDetails = ({ project, backers }) => {
                 {connectedAccount == project?.owner ? (
                   project?.status != 3 ? (
                     project?.status == 1 ? (
-                      <button
-                        type="button"
-                        className="inline-block px-6 py-2.5 bg-orange-600
+                      <>
+                        <button
+                          type="button"
+                          className="inline-block px-6 py-2.5 bg-orange-600
                         text-white font-medium text-xs leading-tight uppercase
                         rounded-full shadow-md hover:bg-orange-700"
-                        onClick={() => payoutProject(project?.id)}
-                      >
-                        Payout
-                      </button>
+                          onClick={() => payoutProject(project?.id)}
+                        >
+                          Payout
+                        </button>
+                        <button
+                          type="button"
+                          className="inline-block px-6 py-2.5 bg-gray-600
+                          text-white font-medium text-xs leading-tight uppercase
+                          rounded-full shadow-md hover:bg-gray-700"
+                          onClick={() =>
+                            setGlobalState("updateModal", "scale-100")
+                          }
+                        >
+                          Edit
+                        </button>
+                      </>
                     ) : project?.status != 4 ? (
                       <>
                         <button
