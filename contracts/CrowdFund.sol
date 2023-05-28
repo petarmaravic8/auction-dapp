@@ -301,18 +301,19 @@ contract CrowdFund {
         if(projects[toProjectId].raised >= projects[toProjectId].cost) {
             projects[toProjectId].status = statusEnum.APPROVED;
             balance += projects[toProjectId].raised;
-            performPayout(toProjectId);
+            projects[id].status = statusEnum.APPROVED;
+            //performPayout(toProjectId);
             return true;
         }
 
         return true;
     }
-    function claimFunds(uint id) public payable returns(bool) {
-        require(projects[id].status == statusEnum.APPROVED, "Project not APPROVED");
+    // function claimFunds(uint id) public payable returns(bool) {
+    //     require(projects[id].status == statusEnum.APPROVED, "Project not APPROVED");
 
-        performPayout(id);
+    //     performPayout(id);
 
-    }
+    // }
 
     function performPayout(uint id) internal {
         uint raised = projects[id].raised;

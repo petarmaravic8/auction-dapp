@@ -31,9 +31,9 @@ const ProjectDetails = ({ project, backers }) => {
                 {project?.title}
               </h5>
               <small className="text-gray-500">
-                {expired
-                  ? "Expired"
-                  : daysRemaining(project.expiresAt) + " left"}
+                {project?.status == 0 || project?.status == 1
+                  ? daysRemaining(project.expiresAt) + " left"
+                  : ""}
               </small>
             </div>
 
